@@ -1,0 +1,14 @@
+lv4 yêu cầu tương tượng mẫu câu như lv1 
+
+thêm phần :
+
+- nền tên b4.jpg
+
+- ở bảng luật chơi khi bắt đầu , thêm một bảng hướng dẩn : " trước khi bắt đầu hãy học mã hóa từ 10-20 trong sách kích hoạt thiên tài sáng tạo hoặc 5 phút thuộc bài bạn nhé! ( hiể thị phái trên cùng màn hình , dể nhìn thấy.
+
+- lúc chơi: 
+
+- chọn đúng số ngẫu nhiên và hình tương ứng xảy ra hiệu ứng +30 điểm , cứ mỗi 3 hình đúng liên tiếp là hình chọn đúng được zoom to như ở lv3.
+
+- kết thúc chuyển tiếp sang lv5, tên file lv5.htlm
+

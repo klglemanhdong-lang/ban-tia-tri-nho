@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bắn Tỉa Siêu Trí Nhớ - Level 1</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f0f8ff url('b1.jpg') no-repeat center center fixed; 
+            background-size: cover; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+            user-select: none; 
+        }
+        
+        h1 { color: #d32f2f; text-transform: uppercase; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(255,255,255,0.8); }
+        #timer-box { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 20px; background: rgba(255,255,255,0.7); display: inline-block; padding: 5px 15px; border-radius: 10px; }
+        
+        .row { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; }
+        .card { width: 85px; height: 105px; background-color: #fff; border: 3px solid #4CAF50; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: transform 0.2s; position: relative; overflow: hidden; }
+        .card:hover { transform: scale(1.05); }
+        .number-card { font-size: 30px; color: #1976D2; }
+        .image-card { background-color: #FFF9C4; border-color: #FBC02D; }
+        .image-card img { width: 100%; height: 75%; object-fit: contain; }
+        .image-name { font-size: 11px; color: #333; padding-bottom: 3px; }
+        
+        .selected::after { content: "🔫"; position: absolute; top: -5px; right: -5px; font-size: 25px; animation: aim 0.5s infinite alternate; z-index: 10; }
+        .burning { background-color: #ffcccb; border-color: #f44336; animation: burn 0.5s forwards; pointer-events: none; }
+        .burning::after { content: "🔥"; position: absolute; font-size: 45px; z-index: 11; }
+        .broken::after { content: "💥"; position: absolute; top: -5px; right: -5px; font-size: 25px; z-index: 10; }
+        .hidden-card { visibility: hidden; pointer-events: none; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); color: white; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal h2 { font-size: 42px; margin-bottom: 10px; color: #FFEB3B; }
+        .points-text { font-size: 35px; color: #4CAF50; font-weight: bold; margin: 15px 0; text-shadow: 0 0 10px rgba(76, 175, 80, 0.4); }
+        
+        .rank-bar { width: 320px; height: 25px; background: #333; border-radius: 15px; border: 2px solid #FFEB3B; position: relative; margin: 10px 0; overflow: hidden; }
+        .rank-fill { width: 40%; height: 100%; background: linear-gradient(90deg, #FF9800, #FFEB3B); }
+        
+        button { padding: 15px 35px; font-size: 22px; background-color: #ff9800; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4); transition: 0.2s; }
+        button:hover { background-color: #f57c00; transform: scale(1.05); }
+        
+        @keyframes aim { from { transform: scale(1); } to { transform: scale(1.2); } }
+        @keyframes burn { 100% { opacity: 0; transform: scale(0); } }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 100% { transform: translateX(0); } }
+        .shake { animation: shake 0.3s; }
+    </style>
+</head>
+<body>
+
+    <h1>Bắn Tỉa Trí Nhớ</h1>
+    <div id="timer-box">Thời gian: <span id="time-left" style="color: red;">60</span> giây</div>
+
+    <div id="top-row" class="row"></div>
+    <div id="bottom-row" class="row"></div>
+
+    <div id="rule-modal" class="modal active">
+        <h2>📜 LUẬT CHƠI</h2>
+        <p style="font-size: 22px; max-width: 600px;">
+            Chào mừng bạn!<br><br>
+            - Nhiệm vụ: Chọn <b>Số</b> ghép với <b>Hình ảnh</b> tương ứng.<br>
+            - Thời gian: <b>1 phút</b>.<br>
+            - Hoàn thành để tích lũy 400 điểm thăng cấp!
+        </p>
+        <button onclick="startGame()">BẮT ĐẦU</button>
+    </div>
+
+    <div id="win-modal" class="modal">
+        <h2 style="color: #FFEB3B; font-size: 45px;">Giỏi lắm! Tiếp tục để thăng cấp 🚀</h2>
+        <p class="points-text">+ 400 ĐIỂM</p>
+        <div class="rank-bar"><div class="rank-fill"></div></div>
+        <p style="font-size: 20px; color: #ddd; margin-bottom: 15px;">Tiến trình: 400 / 1000</p>
+        <button onclick="window.location.href='lv2.html'">CHINH PHỤC CẤP ĐỘ 2</button>
+    </div>
+
+    <div id="lose-modal" class="modal">
+        <h2>TIẾC QUÁ! 😢</h2>
+        <p>Hết thời gian rồi. Bạn thử lại nhé!</p>
+        <button onclick="location.reload()">THỬ LẠI</button>
+    </div>
+
+    <script>
+        const bgMusic = new Audio('nhac-nen.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
+        const reloadSound = new Audio('nap-dan.mp3');
+        const boomSound = new Audio('bum.mp3');
+        const wrongSound = new Audio('sai.mp3');
+        const victorySound = new Audio('chien-thang.mp3');
+
+        const gameData = [
+            { id: 0, label: "00", text: "Quả trứng" }, { id: 1, label: "01", text: "Cây dù" },
+            { id: 2, label: "02", text: "Con vịt" }, { id: 3, label: "03", text: "Trái tim" },
+            { id: 4, label: "04", text: "Cái ghế" }, { id: 5, label: "05", text: "Quả táo" },
+            { id: 6, label: "06", text: "Vỏ ốc" }, { id: 7, label: "07", text: "Cây rìu" },
+            { id: 8, label: "08", text: "Người tuyết" }, { id: 9, label: "09", text: "Hươu cao cổ" },
+            { id: 10, label: "10", text: "Con heo" }
+        ];
+
+        let selectedNumberId = null;
+        let selectedNumberElement = null;
+        let matchedPairs = 0;
+        let timeLeft = 60;
+        let timerInterval;
+        let isAnimating = false;
+        let isMusicPlaying = false;
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            selectedNumberId = null;
+            selectedNumberElement = null;
+            matchedPairs = 0;
+            timeLeft = 60;
+            isAnimating = false;
+            isMusicPlaying = false; 
+
+            document.getElementById('rule-modal').classList.remove('active');
+            document.getElementById('lose-modal').classList.remove('active');
+            document.getElementById('win-modal').classList.remove('active');
+
+            renderBoard();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            bgMusic.play();
+            isMusicPlaying = true;
+        }
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 't' || event.key === 'T') {
+                handleWin(); 
+            }
+            if (event.key === 'l' || event.key === 'L') {
+                handleLose(); 
+            }
+        });
+
+        function renderBoard() {
+            const topRow = document.getElementById('top-row');
+            const bottomRow = document.getElementById('bottom-row');
+            topRow.innerHTML = ''; bottomRow.innerHTML = '';
+
+            gameData.forEach(item => {
+                const numCard = document.createElement('div');
+                numCard.classList.add('card', 'number-card');
+                numCard.innerText = item.label; 
+                numCard.onclick = () => handleNumberClick(item.id, numCard);
+                topRow.appendChild(numCard);
+            });
+
+            const shuffledData = shuffle([...gameData]);
+            shuffledData.forEach(item => {
+                const imgCard = document.createElement('div');
+                imgCard.classList.add('card', 'image-card');
+                imgCard.innerHTML = `
+                    <img src="${item.id === 10 ? '10.png' : item.label + '.png'}" alt="${item.text}">
+                    <div class="image-name">${item.text}</div>
+                `;
+                imgCard.onclick = () => handleImageClick(item.id, imgCard);
+                bottomRow.appendChild(imgCard);
+            });
+        }
+
+        function handleNumberClick(id, element) {
+            if (isAnimating || element.classList.contains('hidden-card')) return;
+            reloadSound.currentTime = 0; reloadSound.play();
+            if (selectedNumberElement) selectedNumberElement.classList.remove('selected', 'broken');
+            selectedNumberId = id;
+            selectedNumberElement = element;
+            element.classList.add('selected');
+        }
+
+        function handleImageClick(id, element) {
+            if (isAnimating || selectedNumberId === null || element.classList.contains('hidden-card')) return;
+            isAnimating = true;
+
+            if (selectedNumberId === id) {
+                boomSound.currentTime = 0; boomSound.play();
+                element.classList.add('burning');
+                selectedNumberElement.classList.remove('selected');
+                
+                setTimeout(() => {
+                    element.classList.add('hidden-card');
+                    selectedNumberElement.classList.add('hidden-card');
+                    matchedPairs++;
+                    resetSelection();
+                    if (matchedPairs === gameData.length) handleWin();
+                }, 500);
+            } else {
+                wrongSound.currentTime = 0; wrongSound.play();
+                element.classList.add('shake');
+                selectedNumberElement.classList.remove('selected');
+                selectedNumberElement.classList.add('broken');
+
+                setTimeout(() => {
+                    element.classList.remove('shake');
+                    selectedNumberElement.classList.remove('broken');
+                    resetSelection();
+                }, 800);
+            }
+        }
+
+        function resetSelection() {
+            selectedNumberId = null;
+            selectedNumberElement = null;
+            isAnimating = false;
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time-left').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                handleLose();
+            }
+        }
+
+        function handleWin() {
+            clearInterval(timerInterval);
+            bgMusic.pause();
+            victorySound.play();
+            document.getElementById('win-modal').classList.add('active');
+        }
+
+        function handleLose() {
+            clearInterval(timerInterval);
+            bgMusic.pause();
+            document.getElementById('lose-modal').classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 2: Bảo Vệ Trí Nhớ 00-10</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            /* Cập nhật hình nền b2.jpg bao phủ toàn bộ */
+            background: #0B0C10 url('b2.jpg') no-repeat center center fixed; 
+            background-size: cover; 
+            color: white; 
+            text-align: center; 
+            margin: 0; 
+            overflow: hidden; 
+            user-select: none; 
+        }
+        
+        #top-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 10px 30px; 
+            background: rgba(0, 0, 0, 0.8); 
+            border-bottom: 2px solid #45A29E; 
+            z-index: 10; 
+            position: relative; 
+        }
+        #center-info { display: flex; flex-direction: column; align-items: center; }
+        #game-title { font-size: 26px; color: #66FCF1; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px #66FCF1; margin-bottom: 5px; }
+        #level-indicator { color: #FFEB3B; font-size: 20px; letter-spacing: 3px; }
+        .stats { font-size: 22px; font-weight: bold; min-width: 200px; }
+        #lives-container { text-align: left; }
+        #score-container { text-align: right; }
+
+        #sky { position: relative; width: 100%; height: calc(100vh - 180px); background: transparent; }
+        #base { position: absolute; bottom: 0; width: 100%; height: 120px; background-color: rgba(31, 40, 51, 0.9); border-top: 4px solid #66FCF1; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 10px; gap: 10px; flex-wrap: wrap; z-index: 5; }
+        .turret-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .cannon { font-size: 35px; margin-bottom: -15px; z-index: 2; transition: transform 0.1s; }
+        .btn-shoot { width: 50px; height: 50px; font-size: 18px; font-weight: bold; border-radius: 50%; border: 2px solid #66FCF1; background-color: #0B0C10; color: #66FCF1; cursor: pointer; box-shadow: 0 0 10px rgba(102, 252, 241, 0.5); position: relative; z-index: 3; }
+        
+        .laser { position: absolute; background-color: red; height: 4px; transform-origin: left center; z-index: 4; box-shadow: 0 0 10px red; animation: laserFade 0.3s forwards; pointer-events: none; }
+        .meteor { position: absolute; display: flex; flex-direction: column; align-items: center; top: -100px; animation: fall linear forwards; z-index: 1; border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 5px; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+        .meteor img { width: 60px; height: 60px; object-fit: contain; }
+        .meteor-text { background: #FFEB3B; color: #000; padding: 1px 6px; border-radius: 5px; font-size: 13px; font-weight: bold; margin-top: 4px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal h2 { font-size: 45px; margin-bottom: 15px; color: #66FCF1; }
+        
+        .points-text { font-size: 35px; color: #4CAF50; font-weight: bold; margin: 10px 0; text-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+        .rank-bar { width: 350px; height: 25px; background: #333; border-radius: 15px; border: 2px solid #66FCF1; position: relative; margin-bottom: 10px; overflow: hidden; }
+        .rank-fill { width: 80%; height: 100%; background: linear-gradient(90deg, #4CAF50, #66FCF1); }
+        
+        button.action-btn { padding: 15px 40px; font-size: 22px; background-color: #ff9800; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4); }
+
+        @keyframes fall { to { top: calc(100vh - 120px); } }
+        @keyframes laserFade { 0% { opacity: 1; } 100% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <div class="stats" id="lives-container">Mạng: <span id="lives" style="color: #ff4d4d;">❤️❤️❤️❤️❤️</span></div>
+        <div id="center-info">
+            <div id="game-title">BẢO VỆ TRÍ NHỚ</div>
+            <div id="level-indicator">⭐</div>
+        </div>
+        <div class="stats" id="score-container">Mục tiêu: <span id="score">0</span> / 30</div>
+    </div>
+
+    <div id="sky"></div>
+    <div id="base"></div>
+
+    <div id="rule-modal" class="modal active">
+        <h2>🚀 LUẬT CHƠI LEVEL 2</h2>
+        <p style="font-size: 24px; max-width: 700px;">
+            Chào bạn! Trong vòng này:<br><br>
+            - Bạn hãy chọn <b>số nòng súng</b> tương ứng để bắn hạ các thiên thạch hình ảnh.<br>
+            - Bạn có <b>5 mạng</b> để bảo vệ căn cứ.<br>
+            - Tốc độ sẽ tăng dần sau mỗi 10 điểm!
+        </p>
+        <button class="action-btn" onclick="startGame()">BẮT ĐẦU NGAY</button>
+    </div>
+
+    <div id="win-modal" class="modal">
+        <h2 style="color: #66FCF1; font-size: 45px;">Giỏi lắm! Tiếp tục để thăng cấp 🚀</h2>
+        <p class="points-text">+ 400 ĐIỂM</p>
+        <div class="rank-bar"><div class="rank-fill"></div></div>
+        <p style="font-size: 20px; color: #ddd; margin-bottom: 5px;">Tiến trình: 800 / 1000</p>
+        <button class="action-btn" onclick="window.location.href='lv3.html'">CHINH PHỤC LEVEL 3</button>
+    </div>
+
+    <div id="lose-modal" class="modal">
+        <h2 style="color: #f44336;">CĂN CỨ THẤT THỦ!</h2>
+        <p>Bạn hãy thử lại để bảo vệ bộ số 00-10 nhé!</p>
+        <button class="action-btn" onclick="location.reload()">THỬ LẠI</button>
+    </div>
+
+    <script>
+        const bgMusic = new Audio('nhac-nen.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
+        const reloadSound = new Audio('nap-dan.mp3');
+        const boomSound = new Audio('bum.mp3');
+        const wrongSound = new Audio('sai.mp3');
+        const victorySound = new Audio('chien-thang.mp3');
+
+        const gameData = [
+            { id: 0, label: "00", text: "Quả trứng" }, { id: 1, label: "01", text: "Cây dù" },
+            { id: 2, label: "02", text: "Con vịt" }, { id: 3, label: "03", text: "Trái tim" },
+            { id: 4, label: "04", text: "Cái ghế" }, { id: 5, label: "05", text: "Quả táo" },
+            { id: 6, label: "06", text: "Vỏ ốc" }, { id: 7, label: "07", text: "Cây rìu" },
+            { id: 8, label: "08", text: "Người tuyết" }, { id: 9, label: "09", text: "Hươu cao cổ" },
+            { id: 10, label: "10", text: "Con heo" }
+        ];
+
+        let lives = 5; let score = 0; let gameActive = false;
+        let meteorQueue = []; let spawnInterval;
+        let fallSpeed = 9; let spawnTime = 2500;
+
+        const base = document.getElementById('base');
+        gameData.forEach(item => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'turret-wrapper';
+            wrapper.innerHTML = `<div class="cannon" id="cannon-${item.id}">🗼</div>
+                                <button class="btn-shoot" onclick="shoot(${item.id})">${item.label}</button>`;
+            base.appendChild(wrapper);
+        });
+
+        function startGame() {
+            document.getElementById('rule-modal').classList.remove('active');
+            gameActive = true; bgMusic.play();
+            startSpawning();
+        }
+
+        // PHÍM TẮT ĐỂ TEST (T & L)
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 't' || event.key === 'T') {
+                handleWin(); 
+            }
+            if (event.key === 'l' || event.key === 'L') {
+                handleLose(); 
+            }
+        });
+
+        function startSpawning() {
+            clearInterval(spawnInterval);
+            spawnInterval = setInterval(spawnMeteor, spawnTime);
+        }
+
+        function spawnMeteor() {
+            if (!gameActive) return;
+            if (meteorQueue.length === 0) meteorQueue = [...gameData].sort(() => Math.random() - 0.5);
+            const item = meteorQueue.pop();
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor';
+            meteor.dataset.id = item.id;
+            meteor.style.left = (Math.random() * 80 + 10) + '%';
+            meteor.style.animationDuration = fallSpeed + 's';
+            meteor.innerHTML = `<img src="${item.id === 10 ? '10.png' : item.label + '.png'}"><div class="meteor-text">${item.text}</div>`;
+            document.getElementById('sky').appendChild(meteor);
+            
+            meteor.addEventListener('animationend', () => {
+                if (document.body.contains(meteor)) { meteor.remove(); takeDamage(); }
+            });
+        }
+
+        function shoot(id) {
+            if (!gameActive) return;
+            const cannon = document.getElementById('cannon-' + id);
+            const cRect = cannon.getBoundingClientRect();
+            reloadSound.currentTime = 0; reloadSound.play();
+
+            const targets = Array.from(document.getElementsByClassName('meteor')).filter(m => m.dataset.id == id);
+            if (targets.length > 0) {
+                const target = targets.reduce((l, c) => c.getBoundingClientRect().top > l.getBoundingClientRect().top ? c : l);
+                const tRect = target.getBoundingClientRect();
+                drawLaser(cRect.left + cRect.width/2, cRect.top, tRect.left + tRect.width/2, tRect.top + tRect.height/2);
+                target.remove();
+                boomSound.currentTime = 0; boomSound.play();
+                score++; document.getElementById('score').innerText = score;
+                checkDifficulty();
+            }
+        }
+
+        function checkDifficulty() {
+            if (score >= 30) {
+                handleWin();
+            } else if (score === 20) {
+                fallSpeed = 4.5; spawnTime = 1200; 
+                document.getElementById('level-indicator').innerText = "⭐⭐⭐"; 
+                startSpawning();
+            } else if (score === 10) {
+                fallSpeed = 6.5; spawnTime = 1800; 
+                document.getElementById('level-indicator').innerText = "⭐⭐"; 
+                startSpawning();
+            }
+        }
+
+        function drawLaser(x1, y1, x2, y2) {
+            const len = Math.hypot(x2-x1, y2-y1);
+            const ang = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+            const l = document.createElement('div');
+            l.className = 'laser'; l.style.width = len + 'px'; l.style.left = x1 + 'px';
+            l.style.top = y1 + 'px'; l.style.transform = `rotate(${ang}deg)`;
+            document.body.appendChild(l); setTimeout(() => l.remove(), 250);
+        }
+
+        function takeDamage() {
+            wrongSound.play(); lives--;
+            let h = ''; for(let i=0; i<lives; i++) h += '❤️';
+            document.getElementById('lives').innerText = h || '💀';
+            if (lives <= 0) handleLose();
+        }
+
+        function handleWin() { gameActive = false; clearInterval(spawnInterval); bgMusic.pause(); victorySound.play(); document.getElementById('win-modal').classList.add('active'); }
+        function handleLose() { gameActive = false; clearInterval(spawnInterval); bgMusic.pause(); document.getElementById('lose-modal').classList.add('active'); }
+    </script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 3: Trí Nhớ Di Động</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #050505; color: white; text-align: center; margin: 0; overflow: hidden; user-select: none; }
+        
+        #top-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 10px 30px; 
+            background: linear-gradient(to bottom, #1a1a1a, #000); 
+            border-bottom: 3px solid #FFD700; 
+            z-index: 100; 
+            position: relative; 
+        }
+        #game-title { font-size: 26px; color: #FFD700; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px #FFD700; }
+        .stats { font-size: 20px; font-weight: bold; width: 250px; }
+        
+        #space { 
+            position: relative; 
+            width: 100%; 
+            height: calc(100vh - 200px); 
+            background: url('b3.jpg') no-repeat center center;
+            background-size: cover;
+        }
+        
+        #control-panel { 
+            position: absolute; bottom: 0; width: 100%; height: 140px; background: #111; 
+            border-top: 5px solid #FFD700; display: flex; justify-content: center; 
+            align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px; z-index: 110; 
+        }
+        
+        .btn-target { 
+            width: 65px; height: 65px; font-size: 22px; font-weight: bold; border-radius: 12px; 
+            border: 3px solid #FFD700; background: #222; color: #FFD700; cursor: pointer; transition: 0.2s; 
+        }
+        .btn-target:active { transform: scale(0.9); background: #FFD700; color: #000; }
+
+        .meteor { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 50; padding: 8px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(3px); border: 1px solid rgba(255,215,0,0.3); border-radius: 15px; transition: transform 0.3s; }
+        .meteor img { width: 70px; height: 70px; object-fit: contain; }
+        .meteor-text { background: #FFD700; color: #000; padding: 2px 10px; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 5px; }
+
+        /* Hiệu ứng lạ cho mỗi 5 lần bắn trúng */
+        @keyframes specialBlast {
+            0% { transform: scale(1) rotate(0deg); filter: hue-rotate(0deg); }
+            50% { transform: scale(2.5) rotate(180deg); filter: hue-rotate(180deg); opacity: 1; }
+            100% { transform: scale(0) rotate(360deg); filter: hue-rotate(360deg); opacity: 0; }
+        }
+        .special-effect { animation: specialBlast 0.8s forwards !important; z-index: 999 !important; }
+
+        /* Hiệu ứng +5 bay lên */
+        .bonus-plus {
+            position: absolute; color: #FFEB3B; font-size: 45px; font-weight: bold;
+            text-shadow: 0 0 15px #FF9800, 2px 2px 5px #000; z-index: 1000;
+            pointer-events: none; animation: floatUpPlus 1s forwards;
+        }
+        @keyframes floatUpPlus {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-120px); opacity: 0; }
+        }
+
+        @keyframes flyLeftToRight { from { left: -150px; } to { left: 110%; } }
+        @keyframes flyRightToLeft { from { right: -150px; } to { right: 110%; } }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.active { display: flex; }
+        
+        .rank-bar { width: 350px; height: 25px; background: #333; border-radius: 15px; border: 2px solid #FFD700; overflow: hidden; margin: 15px 0; }
+        .rank-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #FFD700, #FFF); }
+        .points-text { font-size: 35px; color: #4CAF50; font-weight: bold; margin: 10px 0; }
+        
+        button.action-btn { padding: 15px 40px; font-size: 24px; background: #FFD700; color: black; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        button.action-btn:hover { background: #fff; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <div class="stats" style="text-align: left;">Mạng: <span id="lives" style="color: #ff4d4d;">❤️❤️❤️❤️❤️</span></div>
+        <div id="game-title">TRÍ NHỚ DI ĐỘNG</div>
+        <div class="stats" style="text-align: right;">Mục tiêu: <span id="score">0</span> / 40</div>
+    </div>
+
+    <div id="space"></div>
+    <div id="control-panel"></div>
+
+    <div id="rule-modal" class="modal active">
+        <p style="font-size: 32px; color: #FFEB3B; font-weight: bold; margin-bottom: 20px;">"Vòng thăng cấp hãy tập trung"</p>
+        <p style="font-size: 20px; max-width: 700px; color: #ccc; line-height: 1.6;">
+           - Thiên thạch sẽ bay ngang từ hai phía.<br>
+           - Hãy chọn số tương ứng để bắn hạ.<br>
+           - Đạt 40 điểm để nhận huy hiệu <b>ĐỒNG</b>!
+        </p>
+        <button class="action-btn" onclick="startGame()">BẮT ĐẦU NGAY</button>
+    </div>
+
+    <div id="win-modal" class="modal">
+        <div id="win-content"></div>
+    </div>
+
+    <div id="lose-modal" class="modal">
+        <h1 style="color: #ff4d4d; font-size: 50px;">SẮP ĐƯỢC RỒI ! 🚀</h1>
+        <p style="font-size: 24px;">Đừng nản chí, tập trung hơn lại nào!</p>
+        <button class="action-btn" style="background: #f44336; color: white;" onclick="location.reload()">THỬ LẠI</button>
+    </div>
+
+    <script>
+        const bgMusic = new Audio('nhac-nen.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
+        const reloadSound = new Audio('nap-dan.mp3');
+        const boomSound = new Audio('bum.mp3');
+        const wrongSound = new Audio('sai.mp3');
+        const victorySound = new Audio('chien-thang.mp3');
+
+        const gameData = [
+            { id: 0, label: "00", text: "Quả trứng" }, { id: 1, label: "01", text: "Cây dù" },
+            { id: 2, label: "02", text: "Con vịt" }, { id: 3, label: "03", text: "Trái tim" },
+            { id: 4, label: "04", text: "Cái ghế" }, { id: 5, label: "05", text: "Quả táo" },
+            { id: 6, label: "06", text: "Vỏ ốc" }, { id: 7, label: "07", text: "Cây rìu" },
+            { id: 8, label: "08", text: "Người tuyết" }, { id: 9, label: "09", text: "Hươu cao cổ" },
+            { id: 10, label: "10", text: "Con heo" }
+        ];
+
+        let lives = 5; let score = 0; let gameActive = false;
+        let spawnTimeout; let startTime;
+        let currentSpeed = 8; 
+
+        const panel = document.getElementById('control-panel');
+        gameData.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-target'; btn.innerText = item.label;
+            btn.onclick = () => shoot(item.id);
+            panel.appendChild(btn);
+        });
+
+        function startGame() {
+            document.getElementById('rule-modal').classList.remove('active');
+            gameActive = true; 
+            startTime = Date.now(); 
+            bgMusic.play();
+            startSpawning();
+        }
+
+        function startSpawning() {
+            const cycle = () => {
+                if(!gameActive) return;
+                const currentMeteors = document.getElementsByClassName('meteor').length;
+                if (currentMeteors < 3) spawnMeteor();
+                let delay = score > 30 ? 1500 : (score > 20 ? 2000 : 2500);
+                currentSpeed = score > 30 ? 5.5 : (score > 15 ? 6.5 : 8);
+                spawnTimeout = setTimeout(cycle, delay);
+            };
+            cycle();
+        }
+
+        function spawnMeteor() {
+            const item = gameData[Math.floor(Math.random() * gameData.length)];
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor'; meteor.dataset.id = item.id;
+            meteor.dataset.hit = "false"; // Để không bị trừ mạng khi đang nổ đặc biệt
+            const fromLeft = Math.random() > 0.5;
+            meteor.style.top = (Math.random() * 60 + 5) + '%';
+            meteor.style.animation = (fromLeft ? 'flyLeftToRight' : 'flyRightToLeft') + ` ${currentSpeed}s linear forwards`;
+            meteor.innerHTML = `<img src="${item.id === 10 ? '10.png' : item.label + '.png'}"><div class="meteor-text">${item.text}</div>`;
+            document.getElementById('space').appendChild(meteor);
+            meteor.addEventListener('animationend', () => {
+                if(document.body.contains(meteor)) { 
+                    if(meteor.dataset.hit === "false") {
+                        meteor.remove(); if(gameActive) takeDamage(); 
+                    } else {
+                        meteor.remove();
+                    }
+                }
+            });
+        }
+
+        function shoot(id) {
+            if(!gameActive) return;
+            reloadSound.currentTime = 0; reloadSound.play();
+            const targets = Array.from(document.getElementsByClassName('meteor')).filter(m => m.dataset.id == id && m.dataset.hit === "false");
+            
+            if(targets.length > 0) {
+                const target = targets[0];
+                target.dataset.hit = "true"; // Đánh dấu đã bắn trúng
+                score++;
+                document.getElementById('score').innerText = score;
+                boomSound.currentTime = 0; boomSound.play();
+
+                // Kiểm tra mỗi 5 lần bắn trúng (5, 10, 15...)
+                if (score % 5 === 0) {
+                    // Chốt vị trí để không bị nhảy sang trái
+                    const rect = target.getBoundingClientRect();
+                    target.style.left = rect.left + 'px';
+                    target.style.animation = 'none'; 
+                    
+                    // Hiện hiệu ứng +5
+                    const plus = document.createElement('div');
+                    plus.className = 'bonus-plus';
+                    plus.innerText = '+5';
+                    plus.style.left = (rect.left + rect.width/2 - 20) + 'px';
+                    plus.style.top = rect.top + 'px';
+                    document.body.appendChild(plus);
+                    setTimeout(() => plus.remove(), 1000);
+
+                    target.classList.add('special-effect');
+                    setTimeout(() => { if(target.parentNode) target.remove(); }, 800);
+                } else {
+                    target.style.pointerEvents = 'none';
+                    target.innerHTML = '<span style="font-size:50px">💥</span>';
+                    setTimeout(() => { if(target.parentNode) target.remove(); }, 200);
+                }
+
+                if(score >= 40) handleWin();
+            }
+        }
+
+        function takeDamage() {
+            if(!gameActive) return;
+            wrongSound.play(); lives--;
+            let h = ''; for(let i=0; i<lives; i++) h += '❤️';
+            document.getElementById('lives').innerText = h || '💀';
+            if(lives <= 0) handleLose();
+        }
+
+        function handleWin() {
+            gameActive = false;
+            clearTimeout(spawnTimeout);
+            bgMusic.pause();
+            victorySound.play();
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+            document.getElementById('win-modal').innerHTML = `
+                <style>
+                    @keyframes bronzeBadgeZoom {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(1.15); } 
+                        100% { transform: scale(1); }
+                    }
+                    .animated-badge {
+                        animation: bronzeBadgeZoom 2s ease-in-out infinite;
+                    }
+                </style>
+                <img src="1dong.png" class="animated-badge" style="width: 300px; margin-bottom: 20px; filter: drop-shadow(0 0 20px #cd7f32);">
+                <h2 style="color: #FFD700; font-size: 50px; text-shadow: 0 0 20px #FFD700;">Tuyệt vời! Bạn đã thăng cấp ĐỒNG 🥉</h2>
+                <p class="points-text">+ 200 ĐIỂM</p>
+                <p style="font-size: 24px; color: #fff; margin-bottom: 15px;">Thời gian hoàn thành: ${timeTaken} giây</p>
+                <div class="rank-bar" style="width:400px; height:30px; background:#333; border:3px solid #FFD700; border-radius:15px; overflow:hidden; margin:15px 0; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);">
+                    <div style="width: 100%; height:100%; background:linear-gradient(90deg, #FFD700, #FFF);"></div>
+                </div>
+                <p style="font-size: 26px; color: #FFD700; font-weight: bold;">Tổng điểm: 1000 / 1000</p>
+                <button class="action-btn" style="margin-top: 25px;" onclick="window.location.href='lv4.html'">CẤP ĐỘ TIẾP THEO ➔</button>
+            `;
+            document.getElementById('win-modal').classList.add('active');
+        }
+
+        function handleLose() { 
+            gameActive = false; 
+            clearTimeout(spawnTimeout); 
+            bgMusic.pause();
+            const meteors = document.getElementsByClassName('meteor');
+            while(meteors[0]) meteors[0].parentNode.removeChild(meteors[0]);
+            document.getElementById('lose-modal').classList.add('active'); 
+        }
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 't' || event.key === 'T') { handleWin(); }
+            if (event.key === 'l' || event.key === 'L') { handleLose(); }
+        });
+    </script>
+</body>
+</html>

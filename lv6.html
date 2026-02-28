@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 6: Trí Nhớ Di Động 10-20</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #050505; color: white; text-align: center; margin: 0; overflow: hidden; user-select: none; }
+        
+        #top-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 10px 30px; 
+            background: linear-gradient(to bottom, #1a1a1a, #000); 
+            border-bottom: 3px solid #FFD700; 
+            z-index: 100; 
+            position: relative; 
+        }
+        #game-title { font-size: 26px; color: #FFD700; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px #FFD700; }
+        .stats { font-size: 20px; font-weight: bold; width: 250px; }
+        
+        #space { 
+            position: relative; 
+            width: 100%; 
+            height: calc(100vh - 200px); 
+            background: url('b6.jpg') no-repeat center center;
+            background-size: cover;
+        }
+        
+        #control-panel { 
+            position: absolute; bottom: 0; width: 100%; height: 140px; background: #111; 
+            border-top: 5px solid #FFD700; display: flex; justify-content: center; 
+            align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px; z-index: 110; 
+        }
+        
+        .btn-target { 
+            width: 65px; height: 65px; font-size: 22px; font-weight: bold; border-radius: 12px; 
+            border: 3px solid #FFD700; background: #222; color: #FFD700; cursor: pointer; transition: 0.2s; 
+        }
+        .btn-target:active { transform: scale(0.9); background: #FFD700; color: #000; }
+
+        .meteor { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 50; padding: 8px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(3px); border: 1px solid rgba(255,215,0,0.3); border-radius: 15px; transition: transform 0.3s; }
+        .meteor img { width: 70px; height: 70px; object-fit: contain; }
+        .meteor-text { background: #FFD700; color: #000; padding: 2px 10px; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 5px; }
+
+        /* Tia Laser xoáy xanh dương */
+        .laser {
+            position: absolute;
+            height: 6px;
+            background: linear-gradient(90deg, transparent, #00f2ff, #fff);
+            box-shadow: 0 0 15px #00f2ff;
+            transform-origin: left center;
+            z-index: 80;
+            pointer-events: none;
+            border-radius: 10px;
+            animation: laserBeam 0.2s ease-out forwards;
+        }
+
+        @keyframes laserBeam {
+            0% { transform: scaleY(1); filter: hue-rotate(0deg); }
+            50% { transform: scaleY(2) brightness(1.5); }
+            100% { transform: scaleY(1) opacity: 0; }
+        }
+
+        /* Hiệu ứng nổ chu kỳ 5 */
+        @keyframes specialBlast {
+            0% { transform: scale(1) rotate(0deg); filter: hue-rotate(0deg); }
+            50% { transform: scale(2.5) rotate(180deg); filter: hue-rotate(180deg); opacity: 1; }
+            100% { transform: scale(0) rotate(360deg); filter: hue-rotate(360deg); opacity: 0; }
+        }
+        .special-effect { animation: specialBlast 0.8s forwards !important; z-index: 999 !important; }
+
+        .bonus-plus {
+            position: absolute; color: #FFEB3B; font-size: 45px; font-weight: bold;
+            text-shadow: 0 0 15px #FF9800, 2px 2px 5px #000; z-index: 1000;
+            pointer-events: none; animation: floatUpPlus 1s forwards;
+        }
+        @keyframes floatUpPlus {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-120px); opacity: 0; }
+        }
+
+        @keyframes flyLeftToRight { from { left: -150px; } to { left: 110%; } }
+        @keyframes flyRightToLeft { from { right: -150px; } to { right: 110%; } }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.active { display: flex; }
+        
+        .rank-bar { width: 350px; height: 25px; background: #333; border-radius: 15px; border: 2px solid #FFD700; overflow: hidden; margin: 15px 0; }
+        .rank-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #FFD700, #FFF); }
+        .points-text { font-size: 35px; color: #4CAF50; font-weight: bold; margin: 10px 0; }
+        
+        button.action-btn { padding: 15px 40px; font-size: 24px; background: #FFD700; color: black; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        button.action-btn:hover { background: #fff; transform: scale(1.1); }
+        
+        .lose-btn { background: #f44336 !important; color: white !important; box-shadow: 0 0 20px #f44336; }
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <div class="stats" style="text-align: left;">Mạng: <span id="lives" style="color: #ff4d4d;">❤️❤️❤️❤️❤️</span></div>
+        <div id="game-title">TRÍ NHỚ DI ĐỘNG</div>
+        <div class="stats" style="text-align: right;">Mục tiêu: <span id="score">0</span> / 40</div>
+    </div>
+
+    <div id="space"></div>
+    <div id="control-panel"></div>
+
+    <div id="rule-modal" class="modal active">
+        <h1 style="color: #FFD700; font-size: 40px;">🏅 VÒNG THĂNG CẤP: HUY HIỆU BẠC</h1>
+        <p style="font-size: 32px; color: #FFEB3B; font-weight: bold; margin: 20px 0;">"Vòng thăng cấp hãy tập trung!"</p>
+        <p style="font-size: 22px; max-width: 700px; color: #ccc; line-height: 1.6;">
+           thiên thạch hình ảnh sẽ bay ngang từ hai phía<br>
+           bảo đảm bạn đã ôn tập kỹ để chinh phục HUY HIỆU
+        </p>
+        <button class="action-btn" onclick="startGame()">BẮT ĐẦU NGAY</button>
+    </div>
+
+    <div id="win-modal" class="modal">
+        <div id="win-content" style="display: flex; flex-direction: column; align-items: center; transform: scale(0.9);"></div>
+    </div>
+
+    <div id="lose-modal" class="modal">
+        <h1 style="color: #ff4d4d; font-size: 50px;">🚀 SẮP ĐƯỢC RỒI! CỐ GẮNG LÊN!</h1>
+        <p style="font-size: 26px; color: #fff;">"Đừng nản chí! Chỉ thiếu một chút may mắn và sự tập trung nữa thôi là Huy hiệu đã thuộc về bạn."</p>
+        <p style="font-size: 22px; color: #ccc;">"Hãy giữ vững tay lái và thử lại lần nữa nào!"</p>
+        <button class="action-btn lose-btn" onclick="location.reload()">THỬ LẠI NGAY</button>
+    </div>
+
+    <script>
+        const bgMusic = new Audio('nhac-nen.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
+        const reloadSound = new Audio('nap-dan.mp3');
+        const boomSound = new Audio('bum.mp3');
+        const wrongSound = new Audio('sai.mp3');
+        const victorySound = new Audio('chien-thang.mp3');
+
+        const gameData = [
+            { id: 10, label: "10", text: "Con heo" }, { id: 11, label: "11", text: "Cái thang" },
+            { id: 12, label: "12", text: "Cá mập" }, { id: 13, label: "13", text: "Bươm bướm" },
+            { id: 14, label: "14", text: "Con thuyền" }, { id: 15, label: "15", text: "Tiền" },
+            { id: 16, label: "16", text: "Ốc sên" }, { id: 17, label: "17", text: "Nốt nhạc" },
+            { id: 18, label: "18", text: "Đèn giao thông" }, { id: 19, label: "19", text: "Con chó" },
+            { id: 20, label: "20", text: "Quả bom" }
+        ];
+
+        let lives = 5; let score = 0; let gameActive = false;
+        let spawnTimeout; let startTime;
+        let currentSpeed = 7; 
+
+        const panel = document.getElementById('control-panel');
+        gameData.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-target'; btn.innerText = item.label;
+            btn.onclick = (e) => shoot(item.id, e);
+            panel.appendChild(btn);
+        });
+
+        function startGame() {
+            document.getElementById('rule-modal').classList.remove('active');
+            gameActive = true; 
+            startTime = Date.now(); 
+            bgMusic.play();
+            startSpawning();
+        }
+
+        function startSpawning() {
+            const cycle = () => {
+                if(!gameActive) return;
+                const currentMeteors = document.getElementsByClassName('meteor').length;
+                if (currentMeteors < 3) spawnMeteor();
+                let delay = score > 30 ? 1200 : (score > 20 ? 1800 : 2500);
+                currentSpeed = score > 30 ? 5 : (score > 15 ? 6 : 7);
+                spawnTimeout = setTimeout(cycle, delay);
+            };
+            cycle();
+        }
+
+        function spawnMeteor() {
+            const item = gameData[Math.floor(Math.random() * gameData.length)];
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor'; meteor.dataset.id = item.id;
+            meteor.dataset.hit = "false";
+            const fromLeft = Math.random() > 0.5;
+            meteor.style.top = (Math.random() * 60 + 5) + '%';
+            meteor.style.animation = (fromLeft ? 'flyLeftToRight' : 'flyRightToLeft') + ` ${currentSpeed}s linear forwards`;
+            meteor.innerHTML = `<img src="${item.id}.png"><div class="meteor-text">${item.text}</div>`;
+            document.getElementById('space').appendChild(meteor);
+            meteor.addEventListener('animationend', () => {
+                if(document.body.contains(meteor)) { 
+                    if(meteor.dataset.hit === "false") {
+                        meteor.remove(); if(gameActive) takeDamage(); 
+                    } else {
+                        meteor.remove();
+                    }
+                }
+            });
+        }
+
+        function drawLaser(startX, startY, endX, endY) {
+            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+            const laser = document.createElement('div');
+            laser.className = 'laser';
+            laser.style.width = length + 'px';
+            laser.style.left = startX + 'px';
+            laser.style.top = startY + 'px';
+            laser.style.transform = `rotate(${angle}deg)`;
+            document.body.appendChild(laser);
+            setTimeout(() => laser.remove(), 200);
+        }
+
+        function shoot(id, event) {
+            if(!gameActive) return;
+            reloadSound.currentTime = 0; reloadSound.play();
+            const targets = Array.from(document.getElementsByClassName('meteor')).filter(m => m.dataset.id == id && m.dataset.hit === "false");
+            
+            if(targets.length > 0) {
+                const target = targets[0];
+                target.dataset.hit = "true";
+                
+                // Vẽ laser xoáy từ nút bấm đến mục tiêu
+                const btnRect = event.target.getBoundingClientRect();
+                const targetRect = target.getBoundingClientRect();
+                drawLaser(btnRect.left + btnRect.width/2, btnRect.top, targetRect.left + targetRect.width/2, targetRect.top + targetRect.height/2);
+
+                score++;
+                document.getElementById('score').innerText = score;
+                boomSound.currentTime = 0; boomSound.play();
+
+                if (score % 5 === 0) {
+                    const rect = target.getBoundingClientRect();
+                    target.style.left = rect.left + 'px';
+                    target.style.animation = 'none'; 
+                    const plus = document.createElement('div');
+                    plus.className = 'bonus-plus';
+                    plus.innerText = '+5';
+                    plus.style.left = (rect.left + rect.width/2 - 20) + 'px';
+                    plus.style.top = rect.top + 'px';
+                    document.body.appendChild(plus);
+                    setTimeout(() => plus.remove(), 1000);
+                    target.classList.add('special-effect');
+                    setTimeout(() => { if(target.parentNode) target.remove(); }, 800);
+                } else {
+                    target.style.pointerEvents = 'none';
+                    target.innerHTML = '<span style="font-size:50px">💥</span>';
+                    setTimeout(() => { if(target.parentNode) target.remove(); }, 200);
+                }
+
+                if(score >= 40) handleWin();
+            }
+        }
+
+        function takeDamage() {
+            if(!gameActive) return;
+            wrongSound.play(); lives--;
+            let h = ''; for(let i=0; i<lives; i++) h += '❤️';
+            document.getElementById('lives').innerText = h || '💀';
+            if(lives <= 0) handleLose();
+        }
+
+        function handleWin() {
+            gameActive = false;
+            clearTimeout(spawnTimeout);
+            bgMusic.pause();
+            victorySound.play();
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+            document.getElementById('win-content').innerHTML = `
+                <style>
+                    @keyframes silverBadgeZoom {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(1.15); } 
+                        100% { transform: scale(1); }
+                    }
+                    .silver-badge {
+                        animation: silverBadgeZoom 2s ease-in-out infinite;
+                        width: 300px; margin-bottom: 20px; filter: drop-shadow(0 0 20px #2bac.png);
+                    }
+                </style>
+                <img src="2bac.png" class="silver-badge">
+                <h1 style="color: #fff; font-size: 40px;">🎉 CHUC MỪNG! BẠN ĐÃ LÀ CHIẾN BINH BẠC 🥈</h1>
+                <p style="font-size: 24px; color: #FFEB3B; margin: 10px 0;">"Tuyệt vời! Khả năng phản xạ và ghi nhớ của bạn đã bước sang một tầm cao mới."</p>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; border: 2px solid #FFD700; width: 80%;">
+                    <p class="points-text">Phần thưởng: + 200 ĐIỂM KINH NGHIỆM</p>
+                    <p style="font-size: 24px; color: #fff;">Thời gian hoàn thành: ${timeTaken} giây</p>
+                    <div class="rank-bar" style="width:100%; height:30px; margin: 15px 0;">
+                        <div class="rank-fill" style="width: 100%;"></div>
+                    </div>
+                    <p style="font-size: 26px; color: #FFD700; font-weight: bold;">Tổng điểm tích lũy: 1000 / 1000</p>
+                    <p style="font-size: 18px; color: #aaa;">(Đã tối đa cấp độ hiện tại!)</p>
+                </div>
+
+                <p style="font-size: 22px; color: #fff; margin-top: 20px;">"Cánh cửa đến với Level 7 đã mở. Bạn đã sẵn sàng cho những thử thách khó hơn chưa?"</p>
+                <button class="action-btn" onclick="window.location.href='lv7.html'">CẤP ĐỘ TIẾP THEO ➔</button>
+            `;
+            document.getElementById('win-modal').classList.add('active');
+        }
+
+        function handleLose() { 
+            gameActive = false; 
+            clearTimeout(spawnTimeout); 
+            bgMusic.pause();
+            const meteors = document.getElementsByClassName('meteor');
+            while(meteors[0]) meteors[0].parentNode.removeChild(meteors[0]);
+            document.getElementById('lose-modal').classList.add('active'); 
+        }
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 't' || event.key === 'T') { handleWin(); }
+            if (event.key === 'l' || event.key === 'L') { handleLose(); }
+        });
+    </script>
+</body>
+</html>
