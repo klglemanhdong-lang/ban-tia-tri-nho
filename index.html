@@ -2,155 +2,93 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bắn Tỉa Siêu Trí Nhớ - Horizontal Row</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bắn Tỉa Siêu Trí Nhớ - Level 1</title>
     <style>
-        :root {
-            --bg-color: #f0f8ff;
-            --primary-red: #d32f2f;
-            --primary-green: #4CAF50;
-            --card-width: 70px; /* Độ rộng cố định nhỏ để xếp được nhiều thẻ */
-        }
-
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #1a1a1a; 
-            margin: 0; padding: 0; 
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; overflow: hidden; user-select: none; 
+            background: #f0f8ff url('b1.jpg') no-repeat center center fixed; 
+            background-size: cover; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+            user-select: none; 
         }
-
-        /* Quy tắc 1: Cố định tỷ lệ 9/16 */
-        #game-container {
-            width: 100vw;
-            max-height: 100vh;
-            aspect-ratio: 9 / 16;
-            background: var(--bg-color) url('b1.jpg') no-repeat center center; 
-            background-size: cover;
-            position: relative;
-            margin: auto;
-            border: 6px solid #333;
-            border-radius: 25px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        @media (max-width: 500px) { #game-container { border: none; border-radius: 0; } }
-
-        h1 { color: var(--primary-red); font-size: 6.5vw; margin: 8% 0 2%; text-transform: uppercase; }
-        #timer-box { font-size: 5vw; font-weight: bold; background: rgba(255,255,255,0.8); padding: 2% 6%; border-radius: 15px; margin-bottom: 5%; }
-
-        /* Quy tắc: 11 hình/số trên một hàng ngang có thanh cuộn */
-        .card-row-wrapper {
-            width: 95%;
-            overflow-x: auto; /* Cho phép vuốt ngang */
-            padding: 10px 0;
-            display: flex;
-            scrollbar-width: none; /* Ẩn scrollbar Firefox */
-        }
-        .card-row-wrapper::-webkit-scrollbar { display: none; } /* Ẩn scrollbar Chrome/Safari */
-
-        .row-inner {
-            display: flex;
-            gap: 10px;
-            padding: 0 10px;
-        }
-
-        .card { 
-            flex: 0 0 var(--card-width); /* Không cho phép co giãn, giữ đúng độ rộng */
-            height: 95px;
-            background: #fff; border: 2px solid var(--primary-green); 
-            border-radius: 10px; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-        }
-
-        .number-card { font-size: 28px; color: #1976D2; font-weight: bold; }
-        .image-card { background-color: #FFF9C4; border-color: #FBC02D; }
-        .image-card img { width: 85%; height: 60%; object-fit: contain; }
-        .image-name { font-size: 10px; text-align: center; font-weight: bold; margin-top: 4px; }
-
-        /* Trạng thái thẻ */
-        .selected { border: 4px solid #f44336; transform: scale(1.05); }
-        .selected::after { content: "🎯"; position: absolute; top: -10px; font-size: 20px; }
-        .hidden-card { visibility: hidden; pointer-events: none; }
-        .shake { animation: shake 0.3s; }
-
-        /* Modals: Căn giữa tuyệt đối, không tràn viền */
-        .modal { 
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); z-index: 2000;
-            padding: 10%; box-sizing: border-box;
-            flex-direction: column; align-items: center; justify-content: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: rgba(255,255,255,0.1);
-            padding: 25px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .modal h2 { font-size: 8vw; color: #FFEB3B; margin-bottom: 20px; text-align: center; }
-        .modal p { font-size: 4.5vw; color: #fff; line-height: 1.6; text-align: center; margin-bottom: 20px; }
         
-        button { 
-            width: 100%; padding: 15px; font-size: 5vw; background: #ff9800; 
-            color: white; border: none; border-radius: 12px; font-weight: bold;
-        }
-
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        h1 { color: #d32f2f; text-transform: uppercase; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(255,255,255,0.8); }
+        #timer-box { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 20px; background: rgba(255,255,255,0.7); display: inline-block; padding: 5px 15px; border-radius: 10px; }
+        
+        .row { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; }
+        .card { width: 85px; height: 105px; background-color: #fff; border: 3px solid #4CAF50; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: transform 0.2s; position: relative; overflow: hidden; }
+        .card:hover { transform: scale(1.05); }
+        .number-card { font-size: 30px; color: #1976D2; }
+        .image-card { background-color: #FFF9C4; border-color: #FBC02D; }
+        .image-card img { width: 100%; height: 75%; object-fit: contain; }
+        .image-name { font-size: 11px; color: #333; padding-bottom: 3px; }
+        
+        .selected::after { content: "🔫"; position: absolute; top: -5px; right: -5px; font-size: 25px; animation: aim 0.5s infinite alternate; z-index: 10; }
+        .burning { background-color: #ffcccb; border-color: #f44336; animation: burn 0.5s forwards; pointer-events: none; }
+        .burning::after { content: "🔥"; position: absolute; font-size: 45px; z-index: 11; }
+        .broken::after { content: "💥"; position: absolute; top: -5px; right: -5px; font-size: 25px; z-index: 10; }
+        .hidden-card { visibility: hidden; pointer-events: none; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); color: white; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal h2 { font-size: 42px; margin-bottom: 10px; color: #FFEB3B; }
+        .points-text { font-size: 35px; color: #4CAF50; font-weight: bold; margin: 15px 0; text-shadow: 0 0 10px rgba(76, 175, 80, 0.4); }
+        
+        .rank-bar { width: 320px; height: 25px; background: #333; border-radius: 15px; border: 2px solid #FFEB3B; position: relative; margin: 10px 0; overflow: hidden; }
+        .rank-fill { width: 40%; height: 100%; background: linear-gradient(90deg, #FF9800, #FFEB3B); }
+        
+        button { padding: 15px 35px; font-size: 22px; background-color: #ff9800; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4); transition: 0.2s; }
+        button:hover { background-color: #f57c00; transform: scale(1.05); }
+        
+        @keyframes aim { from { transform: scale(1); } to { transform: scale(1.2); } }
+        @keyframes burn { 100% { opacity: 0; transform: scale(0); } }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 100% { transform: translateX(0); } }
+        .shake { animation: shake 0.3s; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <h1>Bắn Tỉa Trí Nhớ</h1>
-        <div id="timer-box">⏱ <span id="time-left">60</span>s</div>
+    <h1>Bắn Tỉa Trí Nhớ</h1>
+    <div id="timer-box">Thời gian: <span id="time-left" style="color: red;">60</span> giây</div>
 
-        <p style="font-weight: bold; color: #333; margin: 0;">CHỌN SỐ:</p>
-        <div class="card-row-wrapper">
-            <div id="top-row" class="row-inner"></div>
-        </div>
+    <div id="top-row" class="row"></div>
+    <div id="bottom-row" class="row"></div>
 
-        <div style="height: 4vh;"></div>
+    <div id="rule-modal" class="modal active">
+        <h2>📜 LUẬT CHƠI</h2>
+        <p style="font-size: 22px; max-width: 600px;">
+            Chào mừng bạn!<br><br>
+            - Nhiệm vụ: Chọn <b>Số</b> ghép với <b>Hình ảnh</b> tương ứng.<br>
+            - Thời gian: <b>1 phút</b>.<br>
+            - Hoàn thành để tích lũy 400 điểm thăng cấp!
+        </p>
+        <button onclick="startGame()">BẮT ĐẦU</button>
+    </div>
 
-        <p style="font-weight: bold; color: #333; margin: 0;">BẮN HÌNH:</p>
-        <div class="card-row-wrapper">
-            <div id="bottom-row" class="row-inner"></div>
-        </div>
+    <div id="win-modal" class="modal">
+        <h2 style="color: #FFEB3B; font-size: 45px;">Giỏi lắm! Tiếp tục để thăng cấp 🚀</h2>
+        <p class="points-text">+ 400 ĐIỂM</p>
+        <div class="rank-bar"><div class="rank-fill"></div></div>
+        <p style="font-size: 20px; color: #ddd; margin-bottom: 15px;">Tiến trình: 400 / 1000</p>
+        <button onclick="window.location.href='lv2.html'">CHINH PHỤC CẤP ĐỘ 2</button>
+    </div>
 
-        <div id="rule-modal" class="modal active">
-            <div class="modal-content">
-                <h2>📜 LUẬT CHƠI</h2>
-                <p>Vuốt ngang để tìm thẻ.<br>Chọn <b>Số</b> trước, <b>Hình</b> sau để ghi điểm!</p>
-                <button onclick="startGame()">BẮT ĐẦU NGAY</button>
-            </div>
-        </div>
-
-        <div id="win-modal" class="modal">
-            <div class="modal-content">
-                <h2>CHIẾN THẮNG! 🎉</h2>
-                <p>Bạn có trí nhớ thật tuyệt vời.</p>
-                <button onclick="location.reload()">CHƠI LẠI</button>
-            </div>
-        </div>
-
-        <div id="lose-modal" class="modal">
-            <div class="modal-content">
-                <h2>THẤT BẠI 😢</h2>
-                <p>Hết thời gian rồi, thử lại nhé!</p>
-                <button onclick="location.reload()">THỬ LẠI</button>
-            </div>
-        </div>
+    <div id="lose-modal" class="modal">
+        <h2>TIẾC QUÁ! 😢</h2>
+        <p>Hết thời gian rồi. Bạn thử lại nhé!</p>
+        <button onclick="location.reload()">THỬ LẠI</button>
     </div>
 
     <script>
+        const bgMusic = new Audio('nhac-nen.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
+        const reloadSound = new Audio('nap-dan.mp3');
+        const boomSound = new Audio('bum.mp3');
+        const wrongSound = new Audio('sai.mp3');
+        const victorySound = new Audio('chien-thang.mp3');
+
         const gameData = [
             { id: 0, label: "00", text: "Quả trứng" }, { id: 1, label: "01", text: "Cây dù" },
             { id: 2, label: "02", text: "Con vịt" }, { id: 3, label: "03", text: "Trái tim" },
@@ -165,63 +103,138 @@
         let matchedPairs = 0;
         let timeLeft = 60;
         let timerInterval;
+        let isAnimating = false;
+        let isMusicPlaying = false;
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
 
         function startGame() {
+            selectedNumberId = null;
+            selectedNumberElement = null;
+            matchedPairs = 0;
+            timeLeft = 60;
+            isAnimating = false;
+            isMusicPlaying = false; 
+
             document.getElementById('rule-modal').classList.remove('active');
+            document.getElementById('lose-modal').classList.remove('active');
+            document.getElementById('win-modal').classList.remove('active');
+
             renderBoard();
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('time-left').innerText = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('lose-modal').classList.add('active');
-                }
-            }, 1000);
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            bgMusic.play();
+            isMusicPlaying = true;
         }
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 't' || event.key === 'T') {
+                handleWin(); 
+            }
+            if (event.key === 'l' || event.key === 'L') {
+                handleLose(); 
+            }
+        });
 
         function renderBoard() {
             const topRow = document.getElementById('top-row');
             const bottomRow = document.getElementById('bottom-row');
+            topRow.innerHTML = ''; bottomRow.innerHTML = '';
 
-            // Render 11 số hàng ngang
             gameData.forEach(item => {
-                const card = document.createElement('div');
-                card.classList.add('card', 'number-card');
-                card.innerText = item.label;
-                card.onclick = () => {
-                    if (selectedNumberElement) selectedNumberElement.classList.remove('selected');
-                    selectedNumberId = item.id;
-                    selectedNumberElement = card;
-                    card.classList.add('selected');
-                };
-                topRow.appendChild(card);
+                const numCard = document.createElement('div');
+                numCard.classList.add('card', 'number-card');
+                numCard.innerText = item.label; 
+                numCard.onclick = () => handleNumberClick(item.id, numCard);
+                topRow.appendChild(numCard);
             });
 
-            // Render 11 hình hàng ngang (xáo trộn)
-            const shuffled = [...gameData].sort(() => Math.random() - 0.5);
-            shuffled.forEach(item => {
-                const card = document.createElement('div');
-                card.classList.add('card', 'image-card');
-                card.innerHTML = `<img src="${item.label}.png" onerror="this.src='https://via.placeholder.com/50'"><div class="image-name">${item.text}</div>`;
-                card.onclick = () => {
-                    if (selectedNumberId === null) return;
-                    if (selectedNumberId === item.id) {
-                        card.classList.add('hidden-card');
-                        selectedNumberElement.classList.add('hidden-card');
-                        matchedPairs++;
-                        if (matchedPairs === gameData.length) {
-                            clearInterval(timerInterval);
-                            document.getElementById('win-modal').classList.add('active');
-                        }
-                    } else {
-                        card.classList.add('shake');
-                        setTimeout(() => card.classList.remove('shake'), 300);
-                    }
-                    selectedNumberId = null;
-                    if (selectedNumberElement) selectedNumberElement.classList.remove('selected');
-                };
-                bottomRow.appendChild(card);
+            const shuffledData = shuffle([...gameData]);
+            shuffledData.forEach(item => {
+                const imgCard = document.createElement('div');
+                imgCard.classList.add('card', 'image-card');
+                imgCard.innerHTML = `
+                    <img src="${item.id === 10 ? '10.png' : item.label + '.png'}" alt="${item.text}">
+                    <div class="image-name">${item.text}</div>
+                `;
+                imgCard.onclick = () => handleImageClick(item.id, imgCard);
+                bottomRow.appendChild(imgCard);
             });
+        }
+
+        function handleNumberClick(id, element) {
+            if (isAnimating || element.classList.contains('hidden-card')) return;
+            reloadSound.currentTime = 0; reloadSound.play();
+            if (selectedNumberElement) selectedNumberElement.classList.remove('selected', 'broken');
+            selectedNumberId = id;
+            selectedNumberElement = element;
+            element.classList.add('selected');
+        }
+
+        function handleImageClick(id, element) {
+            if (isAnimating || selectedNumberId === null || element.classList.contains('hidden-card')) return;
+            isAnimating = true;
+
+            if (selectedNumberId === id) {
+                boomSound.currentTime = 0; boomSound.play();
+                element.classList.add('burning');
+                selectedNumberElement.classList.remove('selected');
+                
+                setTimeout(() => {
+                    element.classList.add('hidden-card');
+                    selectedNumberElement.classList.add('hidden-card');
+                    matchedPairs++;
+                    resetSelection();
+                    if (matchedPairs === gameData.length) handleWin();
+                }, 500);
+            } else {
+                wrongSound.currentTime = 0; wrongSound.play();
+                element.classList.add('shake');
+                selectedNumberElement.classList.remove('selected');
+                selectedNumberElement.classList.add('broken');
+
+                setTimeout(() => {
+                    element.classList.remove('shake');
+                    selectedNumberElement.classList.remove('broken');
+                    resetSelection();
+                }, 800);
+            }
+        }
+
+        function resetSelection() {
+            selectedNumberId = null;
+            selectedNumberElement = null;
+            isAnimating = false;
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time-left').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                handleLose();
+            }
+        }
+
+        function handleWin() {
+            clearInterval(timerInterval);
+            bgMusic.pause();
+            victorySound.play();
+            document.getElementById('win-modal').classList.add('active');
+        }
+
+        function handleLose() {
+            clearInterval(timerInterval);
+            bgMusic.pause();
+            document.getElementById('lose-modal').classList.add('active');
         }
     </script>
 </body>
